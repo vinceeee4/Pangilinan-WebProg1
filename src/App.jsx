@@ -8,6 +8,8 @@ function App() {
   const [count, setCount] = useState(0)
 
   return (
+   
+
     <>
       <section id="center">
         <div className="hero">
@@ -16,9 +18,11 @@ function App() {
           <img src={viteLogo} className="vite" alt="Vite logo" />
         </div>
         <div>
-          <h1>Get started</h1>
+          <h1>Welcome to My React App! :O ^_^ xD</h1>
           <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
+            Name: Vince Erol P. Pangilinan <br />
+            Email: vincepangilinan187@gmail.com <br />
+            Other Personal Info: solid,liquid & gas
           </p>
         </div>
         <button
