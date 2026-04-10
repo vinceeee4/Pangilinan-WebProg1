@@ -95,6 +95,28 @@ const articles = [
       "The season culminates with the final race, where champions are crowned in dramatic fashion.",
       "Rivalries between drivers and teams create unforgettable moments and stories that define F1 history."
     ]
+  },
+  {
+    name: "f1-safety",
+    title: "Safety in Formula 1",
+    image: article1Img,
+    content: [
+      "F1 safety has evolved dramatically with innovations like the Halo, advanced crash structures, and safer circuit design.",
+      "Modern cars include survival cells, impact-absorbing materials, and fire-resistant driver equipment.",
+      "Track safety features such as TecPro barriers and wide run-off areas help protect drivers during incidents.",
+      "Safety improvements in Formula 1 have influenced road car technology and motorsport regulations around the world."
+    ]
+  },
+  {
+    name: "f1-future",
+    title: "The Future of Formula 1",
+    image: article2Img,
+    content: [
+      "Formula 1 is moving toward more sustainable technology, including carbon-neutral fuels and hybrid powertrains.",
+      "The sport is exploring next-generation aerodynamics, digital fan engagement, and global event expansion.",
+      "F1 will continue to balance speed, safety, and sustainability as the sport evolves for new audiences.",
+      "The future of Formula 1 promises closer racing, smarter strategy, and continued engineering innovation."
+    ]
   }
 ];
 
