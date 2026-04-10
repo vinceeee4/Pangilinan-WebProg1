@@ -33,7 +33,7 @@ const ArticlePage = () => {
           </p>
 
           <h2 className="mt-2 text-2xl font-semibold text-zinc-900">
-            F1 article grid
+            F1 Articles
           </h2>
         </div>
 
