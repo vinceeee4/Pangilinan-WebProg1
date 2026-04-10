@@ -57,11 +57,11 @@ const Footer = () => {
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">
                 Contact
               </p>
-              <p className="mt-4 text-sm text-zinc-600">wen.dev27@gmail.com</p>
+              <p className="mt-4 text-sm text-zinc-600">vincepangilinan187@gmail.com</p>
               <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-zinc-500">
-                Github
+           
               </p>
-              <p className="mt-4 text-sm text-zinc-600">github.com/wendev27</p>
+        
             </div>
           </div>
         </div>
@@ -72,7 +72,7 @@ const Footer = () => {
             
           </p>
           <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-900">
-            Built with React & Tailwind
+            
           </p>
         </div>
       </div>

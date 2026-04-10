@@ -7,19 +7,19 @@ const ArticleList = ({ articles }) => {
       {articles.map((article, index) => (
         <article
           key={article.name}
-          className="flex flex-col rounded-3xl border-2 border-neutral-900 bg-white p-5 transition-all duration-300 hover:bg-orange-50 hover:shadow-[8px_8px_0px_0px_rgba(24,24,27,1)]"
+          className="flex flex-col rounded-3xl border-2 border-neutral-900 bg-white p-5 transition-all duration-300 hover:bg-red-50 hover:shadow-[8px_8px_0px_0px_rgba(24,24,27,1)]"
         >
-          {/* Use article.imageUrl here to match your data file */}
-          <div className="relative aspect-4/3 w-full overflow-hidden rounded-[1.25rem] border-2 border-neutral-900 bg-orange-50">
-            {article.imageUrl ? (
+          {/* Use article.image here to match your data file */}
+          <div className="relative aspect-4/3 w-full overflow-hidden rounded-[1.25rem] border-2 border-neutral-900 bg-red-50">
+            {article.image ? (
               <img
-                src={article.imageUrl}
+                src={article.image}
                 alt={article.title}
                 className="h-full w-full object-cover"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center">
-                <div className="h-12 w-12 border-2 border-dashed border-orange-200 bg-white/50" />
+                <div className="h-12 w-12 border-2 border-dashed border-red-200 bg-white/50" />
               </div>
             )}
           </div>
