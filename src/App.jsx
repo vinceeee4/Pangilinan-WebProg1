@@ -1,4 +1,5 @@
-import Layout from './components/Layout';
+import Layout from './layouts/Layout';
+import AuthLayout from './layouts/AuthLayout';
 import AboutPage from './pages/AboutPage';
 import ArticleListPage from './pages/ArticleListPage';
 import ArticlePage from './pages/ArticlePage';
@@ -10,12 +11,18 @@ import SignUpPage from './pages/AuthPages/SignUpPage';
 
 const routes = [
   {
-    path: '/auth/signin',
-    element: <SignInPage />
-  },
-  {
-    path: '/auth/signup',
-    element: <SignUpPage />
+    path: '/auth',
+    element: <AuthLayout />,
+    children: [
+      {
+        path: 'signin',
+        element: <SignInPage />
+      },
+      {
+        path: 'signup',
+        element: <SignUpPage />
+      }
+    ]
   },
   {
     path: '/',
