@@ -56,13 +56,21 @@ const NavBar = () => {
           ))}
         </nav>
 
-        {/* CTA Button */}
-        <a
-          href="/articles"
-          className="hidden sm:inline-flex items-center gap-2 rounded-full bg-zinc-900 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-red-600"
-        >
-          Get Started
-        </a>
+        {/* Auth Buttons */}
+        <div className="hidden sm:flex items-center gap-2">
+          <NavLink
+            to="/auth/signin"
+            className="rounded-full bg-zinc-900 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-red-600"
+          >
+            Sign In
+          </NavLink>
+          <NavLink
+            to="/auth/signup"
+            className="rounded-full border-2 border-zinc-900 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.2em] text-zinc-900 transition hover:bg-zinc-50"
+          >
+            Sign Up
+          </NavLink>
+        </div>
 
         {/* Mobile hamburger placeholder */}
         <button className="flex flex-col gap-1.5 p-1 md:hidden" aria-label="Open menu">

@@ -5,31 +5,43 @@ import ArticlePage from './pages/ArticlePage';
 import HomePage from './pages/HomePage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import NotFoundPage from './pages/NotFoundPage';
+import SignInPage from './pages/AuthPages/SignInPage';
+import SignUpPage from './pages/AuthPages/SignUpPage';
 
-const routes = [{
-  path: '/',
-  element: <Layout />,
-  // Error element
-  errorElement: <NotFoundPage />,
-  children: [{
-    // Path declaration
+const routes = [
+  {
+    path: '/auth/signin',
+    element: <SignInPage />
+  },
+  {
+    path: '/auth/signup',
+    element: <SignUpPage />
+  },
+  {
     path: '/',
-    element: <HomePage />
-  },
-  {
-    path: '/about',
-    element: <AboutPage />
-  },
-  {
-    path: '/articles',
-    element: <ArticleListPage />
-  },
-  {
-    path: '/articles/:name', // -->articles/learn-react
-    element: <ArticlePage />
+    element: <Layout />,
+    // Error element
+    errorElement: <NotFoundPage />,
+    children: [{
+      // Path declaration
+      path: '/',
+      element: <HomePage />
+    },
+    {
+      path: '/about',
+      element: <AboutPage />
+    },
+    {
+      path: '/articles',
+      element: <ArticleListPage />
+    },
+    {
+      path: '/articles/:name', // -->articles/learn-react
+      element: <ArticlePage />
+    }
+    ]
   }
-  ]
-}]
+]
 
 const router = createBrowserRouter(routes);
 
