@@ -30,18 +30,22 @@ const routes = [
   },
   {
     path: '/dashboard',
-    element: <DashboardLayout><DashboardPage /></DashboardLayout>,
-    errorElement: <NotFoundPage />
-  },
-  {
-    path: '/dashboard/reports',
-    element: <DashboardLayout><ReportsPage /></DashboardLayout>,
-    errorElement: <NotFoundPage />
-  },
-  {
-    path: '/dashboard/users',
-    element: <DashboardLayout><UsersPage /></DashboardLayout>,
-    errorElement: <NotFoundPage />
+    element: <DashboardLayout />,
+    errorElement: <NotFoundPage />,
+    children: [
+      {
+        index: true,
+        element: <DashboardPage />
+      },
+      {
+        path: 'reports',
+        element: <ReportsPage />
+      },
+      {
+        path: 'users',
+        element: <UsersPage />
+      }
+    ]
   },
   {
     path: '/',
