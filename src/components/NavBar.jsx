@@ -3,8 +3,7 @@ import { NavLink } from 'react-router-dom';
 const links = [
   { label: 'Home', to: '/' },
   { label: 'About', to: '/about' },
-  { label: 'Articles', to: '/articles' },
-  { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Articles', to: '/articles' }
 ];
 
 const navLinkClassName = ({ isActive }) =>

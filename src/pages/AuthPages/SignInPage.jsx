@@ -1,28 +1,73 @@
-import {Link} from 'react-router-dom';
+import {Link, useNavigate} from 'react-router-dom';
 import Button from '../../components/Button';
+import { authenticateUser, getRoleBasedRedirect, setCurrentUser } from '../../utils/auth';
+import { useState } from 'react';
 
 const inputClasses = 'mt-2 w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-zinc-50';
 
 const actionButtonClassName = 'w-full rounded-xl py-3 text-[11px] tracking-[0.2em]';
 
 const SignInPage = () => {
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
+    });
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setError('');
+        
+        const user = authenticateUser(formData.email, formData.password);
+        
+        if (user) {
+            if (!user.isActive) {
+                setError('Your account is inactive. Please contact administrator.');
+                return;
+            }
+            
+            setCurrentUser(user);
+            const redirectPath = getRoleBasedRedirect(user.role);
+            navigate(redirectPath);
+        } else {
+            setError('Invalid email or password. Please try again.');
+        }
+    };
     return(
         <>
             <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">Log In</h1>
              <p className="mt-3 text-sm leading-6 text-zinc-600">
                 Access your account with the same monochrome wireframe language used across the site.
             </p>
-            <form className="mt-8 space-y-5">
+            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                {error && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                        {error}
+                    </div>
+                )}
                 <div>
                     <label htmlFor="signin-email" className="text-sm font-medium text-zinc-700">
                         Email address
                     </label>
                     <input
                         id="signin-email"
+                        name="email"
                         type="email"
-                        placeholder="Placeholder"
+                        placeholder="Enter your email"
                         autoComplete="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
                         className={inputClasses}
+                        required
                     />
                 </div>
                 <div>
@@ -31,10 +76,14 @@ const SignInPage = () => {
                     </label>
                     <input
                         id="signin-password"
+                        name="password"
                         type="password"
-                        placeholder="Placeholder"
+                        placeholder="Enter your password"
                         autoComplete="current-password"
+                        value={formData.password}
+                        onChange={handleInputChange}
                         className={inputClasses}
+                        required
                     />
 
                     <p className="mt-2 text-xs leading-5 text-zinc-500">
