@@ -1,9 +1,13 @@
 import Layout from './layouts/Layout';
 import AuthLayout from './layouts/AuthLayout';
+import DashboardLayout from './layouts/DashboardLayout';
 import AboutPage from './pages/AboutPage';
 import ArticleListPage from './pages/ArticleListPage';
 import ArticlePage from './pages/ArticlePage';
 import HomePage from './pages/HomePage';
+import DashboardPage from './pages/DashboardPages/DashboardPage';
+import ReportsPage from './pages/DashboardPages/ReportsPage';
+import UsersPage from './pages/DashboardPages/UsersPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import NotFoundPage from './pages/NotFoundPage';
 import SignInPage from './pages/AuthPages/SignInPage';
@@ -23,6 +27,21 @@ const routes = [
         element: <SignUpPage />
       }
     ]
+  },
+  {
+    path: '/dashboard',
+    element: <DashboardLayout><DashboardPage /></DashboardLayout>,
+    errorElement: <NotFoundPage />
+  },
+  {
+    path: '/dashboard/reports',
+    element: <DashboardLayout><ReportsPage /></DashboardLayout>,
+    errorElement: <NotFoundPage />
+  },
+  {
+    path: '/dashboard/users',
+    element: <DashboardLayout><UsersPage /></DashboardLayout>,
+    errorElement: <NotFoundPage />
   },
   {
     path: '/',
