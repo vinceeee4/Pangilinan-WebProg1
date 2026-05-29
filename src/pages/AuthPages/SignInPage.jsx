@@ -1,6 +1,7 @@
-import {Link, useNavigate} from 'react-router-dom';
+import {Link, useLocation, useNavigate} from 'react-router-dom';
 import Button from '../../components/Button';
-import { authenticateUser, getRoleBasedRedirect, setCurrentUser } from '../../utils/auth';
+import { getRoleBasedRedirect, setAuthSession } from '../../utils/auth';
+import { loginUser } from '../../services/UserService';
 import { useState } from 'react';
 
 const inputClasses = 'mt-2 w-full rounded-xl border border-zinc-300 bg-zinc-100 px-4 py-3 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-zinc-900 focus:bg-zinc-50';
@@ -13,7 +14,9 @@ const SignInPage = () => {
         password: ''
     });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -23,23 +26,20 @@ const SignInPage = () => {
         }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-        
-        const user = authenticateUser(formData.email, formData.password);
-        
-        if (user) {
-            if (!user.isActive) {
-                setError('Your account is inactive. Please contact administrator.');
-                return;
-            }
-            
-            setCurrentUser(user);
-            const redirectPath = getRoleBasedRedirect(user.role);
-            navigate(redirectPath);
-        } else {
-            setError('Invalid email or password. Please try again.');
+
+        try {
+            setLoading(true);
+            const { data } = await loginUser(formData);
+            setAuthSession({ token: data.token, user: data.user });
+            const redirectPath = location.state?.from?.pathname || getRoleBasedRedirect(data.user?.type);
+            navigate(redirectPath, { replace: true });
+        } catch (err) {
+            setError(err.response?.data?.message || 'Invalid email or password. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
     return(
@@ -99,8 +99,8 @@ const SignInPage = () => {
                         Forgot Password?
                     </button>
                 </div>
-                <Button type="submit" variant="primary" className={actionButtonClassName}>
-                    Log in
+                <Button type="submit" variant="primary" className={actionButtonClassName} disabled={loading}>
+                    {loading ? 'Logging in...' : 'Log in'}
                 </Button>
                 
                 <div className="relative">

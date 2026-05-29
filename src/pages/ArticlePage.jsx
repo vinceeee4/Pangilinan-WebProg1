@@ -1,10 +1,52 @@
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Button from "../components/Button";
-import articles from '../assets/styles/article-content.js';
+import { fetchArticle, mapArticleFromApi } from '../services/ArticleService';
+import { recordArticleSelection } from '../services/ArticleSelectionService';
+import { isAuthenticated } from '../utils/auth';
 
 const ArticlePage = () => {
   const { name } = useParams();
-  const article = articles.find(article => article.name === name);
+  const [article, setArticle] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadArticle = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const { data } = await fetchArticle(name);
+        const nextArticle = mapArticleFromApi(data);
+        setArticle(nextArticle);
+
+        if (isAuthenticated() && nextArticle._id) {
+          try {
+            await recordArticleSelection(nextArticle._id);
+          } catch (selectionError) {
+            console.error('Unable to record article selection', selectionError);
+          }
+        }
+      } catch (err) {
+        setArticle(null);
+        setError(err.response?.data?.message || 'Article not found.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadArticle();
+  }, [name]);
+
+  if (loading) {
+    return (
+      <div className="flex w-full flex-col gap-6">
+        <section className="border-y-2 border-zinc-900 bg-zinc-50 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
+          <p className="text-sm leading-7 text-zinc-600">Loading article...</p>
+        </section>
+      </div>
+    );
+  }
 
   if (!article) {
     return (
@@ -18,7 +60,7 @@ const ArticlePage = () => {
               Article Not Found
             </h1>
             <p className="mt-4 max-w-lg mx-auto text-sm leading-7 text-zinc-600 sm:text-base">
-              The article you're looking for doesn't exist.
+              {error || "The article you're looking for doesn't exist."}
             </p>
             <div className="mt-6">
               <Button to="/articles">Back to Articles</Button>

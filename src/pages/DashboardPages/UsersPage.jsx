@@ -1,496 +1,304 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   Box,
   Button,
-  Card,
-  Stack,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Paper,
-  Grid,
+  Chip,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
-  Alert,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
   IconButton,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow
+  InputAdornment,
+  MenuItem,
+  Paper,
+  Stack,
+  Switch,
+  TextField,
+  Typography
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
+import { DataGrid } from '@mui/x-data-grid';
 import SearchIcon from '@mui/icons-material/Search';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { createUser, deleteUser, fetchUsers, updateUser } from '../../services/UserService';
+import { validations } from '../../utils/validations';
 
-// Sample user data
-const initialUsers = [
-  { id: 1, firstName: 'Snow', lastName: 'Jon', email: 'jon.snow@example.com', username: 'jsnow', age: 14, role: 'User', gender: 'Male', status: 'active', contact: '09123456789' },
-  { id: 2, firstName: 'Lannister', lastName: 'Cersei', email: 'cersei@example.com', username: 'cersei123', age: 31, role: 'Admin', gender: 'Female', status: 'active', contact: '09987654321' },
-  { id: 3, firstName: 'Lannister', lastName: 'Jaime', email: 'jaime@example.com', username: 'jaime_l', age: 31, role: 'Editor', gender: 'Male', status: 'inactive', contact: '09111111111' },
-  { id: 4, firstName: 'Stark', lastName: 'Arya', email: 'arya@example.com', username: 'arya_stark', age: 11, role: 'User', gender: 'Female', status: 'active', contact: '09222222222' },
-  { id: 5, firstName: 'Targaryen', lastName: 'Daenerys', email: 'daenerys@example.com', username: 'dany_targaryen', age: 30, role: 'Admin', gender: 'Female', status: 'active', contact: '09333333333' },
-];
+const roles = ['admin', 'editor', 'user'];
+const genders = ['male', 'female', 'other'];
+
+const blankForm = {
+  firstName: '',
+  lastName: '',
+  age: '',
+  gender: 'male',
+  contactNumber: '',
+  email: '',
+  username: '',
+  password: '',
+  address: '',
+  type: 'user',
+  isActive: true
+};
+
+const labelize = (value) => value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : '';
 
 export default function UsersPage() {
-  const [users, setUsers] = useState(initialUsers);
-  const [filteredUsers, setFilteredUsers] = useState(initialUsers);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState('');
-  const [filterGender, setFilterGender] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [apiError, setApiError] = useState('');
+  const [query, setQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const [successMessage, setSuccessMessage] = useState('');
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    username: '',
-    age: '',
-    contact: '',
-    role: 'User',
-    gender: 'Male',
-    status: 'active'
-  });
+  const [formData, setFormData] = useState(blankForm);
+  const [formError, setFormError] = useState('');
 
-  // Handle search and filters
-  const handleSearch = (e) => {
-    const term = e.target.value.toLowerCase();
-    setSearchTerm(term);
-    applyFilters(term, filterRole, filterGender, filterStatus);
-  };
-
-  const handleRoleFilter = (e) => {
-    const role = e.target.value;
-    setFilterRole(role);
-    applyFilters(searchTerm, role, filterGender, filterStatus);
-  };
-
-  const handleGenderFilter = (e) => {
-    const gender = e.target.value;
-    setFilterGender(gender);
-    applyFilters(searchTerm, filterRole, gender, filterStatus);
-  };
-
-  const handleStatusFilter = (e) => {
-    const status = e.target.value;
-    setFilterStatus(status);
-    applyFilters(searchTerm, filterRole, filterGender, status);
-  };
-
-  const applyFilters = (search, role, gender, status) => {
-    let filtered = users;
-
-    if (search) {
-      filtered = filtered.filter((user) =>
-        user.firstName.toLowerCase().includes(search) ||
-        user.lastName.toLowerCase().includes(search) ||
-        user.email.toLowerCase().includes(search) ||
-        user.username.toLowerCase().includes(search)
-      );
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setApiError('');
+      const { data } = await fetchUsers();
+      setUsers((Array.isArray(data) ? data : []).map((user) => ({ ...user, id: user._id })));
+    } catch (error) {
+      setApiError(error.response?.data?.message || 'Unable to load users.');
+    } finally {
+      setLoading(false);
     }
-
-    if (role) {
-      filtered = filtered.filter((user) => user.role === role);
-    }
-
-    if (gender) {
-      filtered = filtered.filter((user) => user.gender === gender);
-    }
-
-    if (status) {
-      filtered = filtered.filter((user) => user.status === status);
-    }
-
-    setFilteredUsers(filtered);
   };
 
-  // Handle form input changes
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const filteredUsers = useMemo(() => {
+    const search = query.trim().toLowerCase();
+
+    return users.filter((user) => {
+      const matchesSearch = !search || [
+        user.firstName,
+        user.lastName,
+        user.email,
+        user.username
+      ].join(' ').toLowerCase().includes(search);
+      const matchesRole = !roleFilter || user.type === roleFilter;
+
+      return matchesSearch && matchesRole;
+    });
+  }, [users, query, roleFilter]);
+
+  const openDialog = (user) => {
+    setEditingId(user?._id || null);
+    setFormData(user ? { ...user, password: '' } : blankForm);
+    setFormError('');
+    setDialogOpen(true);
+  };
+
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setEditingId(null);
+    setFormData(blankForm);
+    setFormError('');
+  };
+
+  const handleChange = (event) => {
+    const { name, value, checked, type } = event.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
-  // Add or update user
-  const handleSaveUser = () => {
-    if (editingId) {
-      // Update existing user
-      setUsers(
-        users.map((user) =>
-          user.id === editingId ? { ...user, ...formData } : user
-        )
-      );
-      setSuccessMessage('User updated successfully!');
-    } else {
-      // Add new user
-      const newUser = {
-        id: Math.max(...users.map((u) => u.id), 0) + 1,
-        ...formData
-      };
-      setUsers([...users, newUser]);
-      setSuccessMessage('User added successfully!');
+  const validateForm = () => {
+    const checks = [
+      validations.validateFirstName(formData.firstName),
+      validations.validateLastName(formData.lastName),
+      validations.validateAge(formData.age),
+      validations.validateContactNumber(formData.contactNumber),
+      validations.validateEmail(formData.email),
+      validations.validateUsername(formData.username)
+    ];
+
+    if (!editingId) checks.push(validations.validatePassword(formData.password));
+    if (formData.password) checks.push(validations.validatePassword(formData.password));
+    if (!formData.address.trim()) checks.push('Address is required');
+
+    return checks.find(Boolean) || '';
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const error = validateForm();
+
+    if (error) {
+      setFormError(error);
+      return;
     }
 
-    setTimeout(() => setSuccessMessage(''), 3000);
-    handleCloseDialog();
-  };
+    try {
+      const payload = { ...formData };
+      if (editingId && !payload.password) delete payload.password;
 
-  // Edit user
-  const handleEditUser = (user) => {
-    setFormData(user);
-    setEditingId(user.id);
-    setDialogOpen(true);
-  };
+      if (editingId) {
+        await updateUser(editingId, payload);
+      } else {
+        await createUser(payload);
+      }
 
-  // Delete user
-  const handleDeleteUser = (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
-      setUsers(users.filter((user) => user.id !== id));
-      applyFilters(searchTerm, filterRole, filterGender, filterStatus);
-      setSuccessMessage('User deleted successfully!');
-      setTimeout(() => setSuccessMessage(''), 3000);
+      await loadUsers();
+      closeDialog();
+    } catch (err) {
+      setFormError(err.response?.data?.message || 'Unable to save user.');
     }
   };
 
-  // Open add dialog
-  const handleOpenDialog = () => {
-    setEditingId(null);
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      username: '',
-      age: '',
-      contact: '',
-      role: 'User',
-      gender: 'Male',
-      status: 'active'
-    });
-    setDialogOpen(true);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this user?')) return;
+
+    try {
+      await deleteUser(id);
+      await loadUsers();
+    } catch (err) {
+      setApiError(err.response?.data?.message || 'Unable to delete user.');
+    }
   };
 
-  // Close dialog
-  const handleCloseDialog = () => {
-    setDialogOpen(false);
-    setEditingId(null);
-    setFormData({
-      firstName: '',
-      lastName: '',
-      email: '',
-      username: '',
-      age: '',
-      contact: '',
-      role: 'User',
-      gender: 'Male',
-      status: 'active'
-    });
+  const handleToggleActive = async (user) => {
+    try {
+      await updateUser(user._id, { isActive: !user.isActive });
+      await loadUsers();
+    } catch (err) {
+      setApiError(err.response?.data?.message || 'Unable to update user status.');
+    }
   };
+
+  const columns = [
+    { field: 'firstName', headerName: 'First Name', minWidth: 140, flex: 1 },
+    { field: 'lastName', headerName: 'Last Name', minWidth: 140, flex: 1 },
+    { field: 'email', headerName: 'Email', minWidth: 220, flex: 1.2 },
+    { field: 'username', headerName: 'Username', minWidth: 150 },
+    {
+      field: 'type',
+      headerName: 'Role',
+      minWidth: 110,
+      renderCell: ({ row }) => <Chip size="small" label={labelize(row.type)} />
+    },
+    {
+      field: 'status',
+      headerName: 'Status',
+      minWidth: 120,
+      renderCell: ({ row }) => (
+        <Chip size="small" color={row.isActive ? 'success' : 'default'} label={row.isActive ? 'Active' : 'Inactive'} />
+      )
+    },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      minWidth: 280,
+      sortable: false,
+      renderCell: ({ row }) => (
+        <Stack direction="row" spacing={1}>
+          <Button size="small" variant="outlined" onClick={() => openDialog(row)}>Edit</Button>
+          <Button size="small" variant="contained" color={row.isActive ? 'warning' : 'success'} onClick={() => handleToggleActive(row)}>
+            {row.isActive ? 'Disable' : 'Activate'}
+          </Button>
+          <IconButton size="small" color="error" onClick={() => handleDelete(row._id)} aria-label="delete user">
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Stack>
+      )
+    }
+  ];
 
   return (
     <Box>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
-          Users Management
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-          View, add, edit, and manage all users in the system
-        </Typography>
-      </Box>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 3 }} alignItems={{ sm: 'center' }} justifyContent="space-between">
+        <Box>
+          <Typography variant="h4" sx={{ fontWeight: 'bold' }}>Users Management</Typography>
+          <Typography variant="body2" color="text.secondary">Admin-only user and role management.</Typography>
+        </Box>
+        <Button variant="contained" onClick={() => openDialog()}>Add User</Button>
+      </Stack>
 
-      {/* Success Message */}
-      {successMessage && (
-        <Alert severity="success" sx={{ mb: 3 }}>
-          {successMessage}
-        </Alert>
-      )}
+      {apiError && <Alert severity="error" sx={{ mb: 2 }}>{apiError}</Alert>}
 
-      {/* Add User Button */}
-      <Box sx={{ mb: 3 }}>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={handleOpenDialog}
-          sx={{ backgroundColor: '#d32f2f' }}
-        >
-          Add New User
-        </Button>
-      </Box>
-
-      {/* Search and Filters Section */}
-      <Paper sx={{ p: 3, mb: 3, backgroundColor: '#f5f5f5' }}>
-        <Typography variant="h6" sx={{ mb: 2, fontWeight: 'bold' }}>
-          Search & Filter
-        </Typography>
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
-            <TextField
-              fullWidth
-              placeholder="Search by name, email, or username"
-              value={searchTerm}
-              onChange={handleSearch}
-              variant="outlined"
-              size="small"
-              InputProps={{
-                startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={filterRole}
-                onChange={handleRoleFilter}
-                label="Role"
-              >
-                <MenuItem value="">All Roles</MenuItem>
-                <MenuItem value="User">User</MenuItem>
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="Editor">Editor</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Gender</InputLabel>
-              <Select
-                value={filterGender}
-                onChange={handleGenderFilter}
-                label="Gender"
-              >
-                <MenuItem value="">All Genders</MenuItem>
-                <MenuItem value="Male">Male</MenuItem>
-                <MenuItem value="Female">Female</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filterStatus}
-                onChange={handleStatusFilter}
-                label="Status"
-              >
-                <MenuItem value="">All Status</MenuItem>
-                <MenuItem value="active">Active</MenuItem>
-                <MenuItem value="inactive">Inactive</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-        <Typography variant="caption" sx={{ display: 'block', mt: 2, color: 'text.secondary' }}>
-          Results: {filteredUsers.length} of {users.length} users
-        </Typography>
+      <Paper sx={{ p: 2, mb: 2 }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <TextField
+            size="small"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search users..."
+            InputProps={{
+              startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>
+            }}
+            sx={{ flex: 1 }}
+          />
+          <TextField select size="small" label="Role" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)} sx={{ minWidth: 160 }}>
+            <MenuItem value="">All Roles</MenuItem>
+            {roles.map((role) => <MenuItem key={role} value={role}>{labelize(role)}</MenuItem>)}
+          </TextField>
+        </Stack>
       </Paper>
 
-      {/* Users Table */}
-      <Card>
-        <TableContainer sx={{ overflowX: 'auto' }}>
-          <Table>
-            <TableHead sx={{ backgroundColor: '#1976d2' }}>
-              <TableRow>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>ID</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>First Name</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Last Name</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Email</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Username</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Age</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Contact</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Role</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Gender</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Status</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <TableRow key={user.id} hover>
-                    <TableCell>{user.id}</TableCell>
-                    <TableCell>{user.firstName}</TableCell>
-                    <TableCell>{user.lastName}</TableCell>
-                    <TableCell>{user.email}</TableCell>
-                    <TableCell>{user.username}</TableCell>
-                    <TableCell>{user.age}</TableCell>
-                    <TableCell>{user.contact}</TableCell>
-                    <TableCell>{user.role}</TableCell>
-                    <TableCell>{user.gender}</TableCell>
-                    <TableCell>
-                      <Box
-                        sx={{
-                          display: 'inline-block',
-                          px: 2,
-                          py: 0.5,
-                          borderRadius: 1,
-                          backgroundColor: user.status === 'active' ? '#4caf50' : '#f44336',
-                          color: 'white',
-                          fontSize: '0.75rem',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        {user.status}
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleEditUser(user)}
-                        sx={{ color: '#1976d2' }}
-                        title="Edit user"
-                      >
-                        <EditIcon />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteUser(user.id)}
-                        sx={{ color: '#d32f2f' }}
-                        title="Delete user"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={11} sx={{ textAlign: 'center', py: 3 }}>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      No users found
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </Card>
+      <Paper sx={{ height: 540, width: '100%', p: 1 }}>
+        <DataGrid
+          rows={filteredUsers}
+          columns={columns}
+          loading={loading}
+          disableRowSelectionOnClick
+          pageSizeOptions={[5, 10, 20]}
+          initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
+        />
+      </Paper>
 
-      {/* Add/Edit User Dialog */}
-      <Dialog open={dialogOpen} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold', backgroundColor: '#1976d2', color: 'white' }}>
-          {editingId ? 'Edit User' : 'Add New User'}
-        </DialogTitle>
-        <DialogContent sx={{ pt: 3 }}>
-          <TextField
-            fullWidth
-            label="First Name"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleFormChange}
-            margin="normal"
-          />
-
-          <TextField
-            fullWidth
-            label="Last Name"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleFormChange}
-            margin="normal"
-          />
-
-          <TextField
-            fullWidth
-            label="Email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleFormChange}
-            margin="normal"
-          />
-
-          <TextField
-            fullWidth
-            label="Username"
-            name="username"
-            value={formData.username}
-            onChange={handleFormChange}
-            margin="normal"
-          />
-
-          <TextField
-            fullWidth
-            label="Age"
-            name="age"
-            type="number"
-            value={formData.age}
-            onChange={handleFormChange}
-            margin="normal"
-          />
-
-          <TextField
-            fullWidth
-            label="Contact Number"
-            name="contact"
-            value={formData.contact}
-            onChange={handleFormChange}
-            margin="normal"
-            placeholder="09XXXXXXXXX"
-          />
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Role</InputLabel>
-            <Select
-              name="role"
-              value={formData.role}
-              onChange={handleFormChange}
-              label="Role"
-            >
-              <MenuItem value="User">User</MenuItem>
-              <MenuItem value="Admin">Admin</MenuItem>
-              <MenuItem value="Editor">Editor</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Gender</InputLabel>
-            <Select
-              name="gender"
-              value={formData.gender}
-              onChange={handleFormChange}
-              label="Gender"
-            >
-              <MenuItem value="Male">Male</MenuItem>
-              <MenuItem value="Female">Female</MenuItem>
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Status</InputLabel>
-            <Select
-              name="status"
-              value={formData.status}
-              onChange={handleFormChange}
-              label="Status"
-            >
-              <MenuItem value="active">Active</MenuItem>
-              <MenuItem value="inactive">Inactive</MenuItem>
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={handleCloseDialog}>Cancel</Button>
-          <Button
-            onClick={handleSaveUser}
-            variant="contained"
-            sx={{ backgroundColor: '#1976d2' }}
-          >
-            {editingId ? 'Update User' : 'Add User'}
-          </Button>
-        </DialogActions>
+      <Dialog open={dialogOpen} onClose={closeDialog} maxWidth="md" fullWidth>
+        <Box component="form" onSubmit={handleSubmit}>
+          <DialogTitle>{editingId ? 'Edit User' : 'Add User'}</DialogTitle>
+          <DialogContent dividers>
+            {formError && <Alert severity="error" sx={{ mb: 2 }}>{formError}</Alert>}
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField name="firstName" label="First Name" value={formData.firstName} onChange={handleChange} fullWidth />
+                <TextField name="lastName" label="Last Name" value={formData.lastName} onChange={handleChange} fullWidth />
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField name="age" label="Age" value={formData.age} onChange={handleChange} fullWidth />
+                <TextField name="gender" label="Gender" value={formData.gender} onChange={handleChange} select fullWidth>
+                  {genders.map((gender) => <MenuItem key={gender} value={gender}>{labelize(gender)}</MenuItem>)}
+                </TextField>
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField name="email" label="Email" value={formData.email} onChange={handleChange} fullWidth />
+                <TextField name="contactNumber" label="Contact Number" value={formData.contactNumber} onChange={handleChange} fullWidth />
+              </Stack>
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                <TextField name="username" label="Username" value={formData.username} onChange={handleChange} fullWidth />
+                <TextField name="type" label="Role" value={formData.type} onChange={handleChange} select fullWidth>
+                  {roles.map((role) => <MenuItem key={role} value={role}>{labelize(role)}</MenuItem>)}
+                </TextField>
+              </Stack>
+              <TextField
+                name="password"
+                label="Password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                helperText={editingId ? 'Leave blank to keep current password.' : 'At least 8 characters.'}
+                fullWidth
+              />
+              <TextField name="address" label="Address" value={formData.address} onChange={handleChange} multiline minRows={2} fullWidth />
+              <FormControlLabel
+                control={<Switch name="isActive" checked={Boolean(formData.isActive)} onChange={handleChange} />}
+                label={formData.isActive ? 'Active account' : 'Inactive account'}
+              />
+            </Stack>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDialog}>Cancel</Button>
+            <Button type="submit" variant="contained">{editingId ? 'Save Changes' : 'Add User'}</Button>
+          </DialogActions>
+        </Box>
       </Dialog>
     </Box>
   );

@@ -11,21 +11,28 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  Container
+  Button
 } from '@mui/material';
-import { useLocation, Link } from 'react-router-dom';
+import { useLocation, Link, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import GroupsIcon from '@mui/icons-material/Groups';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import HomeIcon from '@mui/icons-material/Home';
+import ArticleIcon from '@mui/icons-material/Article';
+import LogoutIcon from '@mui/icons-material/Logout';
+import HistoryIcon from '@mui/icons-material/History';
+import { getCurrentUser, logoutUser } from '../utils/auth';
 
 const DRAWER_WIDTH = 280;
 
 export default function DashboardLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const currentUser = getCurrentUser();
+  const currentRole = currentUser?.type || 'user';
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -36,21 +43,43 @@ export default function DashboardLayout({ children }) {
       label: 'Dashboard',
       icon: <DashboardIcon />,
       path: '/dashboard',
-      color: '#1976d2'
+      color: '#1976d2',
+      roles: ['admin', 'editor', 'user']
+    },
+    {
+      label: 'Articles',
+      icon: <ArticleIcon />,
+      path: '/dashboard/articles',
+      color: '#7b1fa2',
+      roles: ['admin', 'editor']
     },
     {
       label: 'Users',
       icon: <GroupsIcon />,
       path: '/dashboard/users',
-      color: '#388e3c'
+      color: '#388e3c',
+      roles: ['admin']
+    },
+    {
+      label: 'Article Selections',
+      icon: <HistoryIcon />,
+      path: '/dashboard/article-selections',
+      color: '#5d4037',
+      roles: ['admin']
     },
     {
       label: 'Reports',
       icon: <AssignmentIcon />,
       path: '/dashboard/reports',
-      color: '#f57c00'
+      color: '#f57c00',
+      roles: ['admin', 'editor', 'user']
     }
   ];
+
+  const handleLogout = () => {
+    logoutUser();
+    navigate('/auth/signin', { replace: true });
+  };
 
   const drawerContent = (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -68,7 +97,7 @@ export default function DashboardLayout({ children }) {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DashboardIcon sx={{ fontSize: 28 }} />
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            Admin Panel
+            Dashboard
           </Typography>
         </Box>
         {/* Close button for mobile */}
@@ -84,7 +113,7 @@ export default function DashboardLayout({ children }) {
 
       {/* Navigation Menu */}
       <List sx={{ flex: 1, pt: 2, px: 1 }}>
-        {menuItems.map((item) => (
+        {menuItems.filter((item) => item.roles.includes(currentRole)).map((item) => (
           <ListItemButton
             key={item.path}
             component={Link}
@@ -182,8 +211,16 @@ export default function DashboardLayout({ children }) {
           <Box sx={{ flex: 1 }} />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             <Typography variant="body2" sx={{ color: '#666' }}>
-              Welcome, Admin
+              Welcome, {currentUser?.firstName || 'User'} ({currentRole})
             </Typography>
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<LogoutIcon />}
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
           </Box>
         </Toolbar>
       </AppBar>

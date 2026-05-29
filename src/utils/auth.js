@@ -1,15 +1,8 @@
-import usersData from '../assets/users.json';
-
-export const authenticateUser = (email, password) => {
-  const user = usersData.find(user => user.email === email && user.password === password);
-  return user || null;
-};
-
 export const getRoleBasedRedirect = (role) => {
-  switch (role.toLowerCase()) {
+  switch (role?.toLowerCase()) {
     case 'admin':
       return '/dashboard';
-    case 'viewer':
+    case 'user':
       return '/dashboard';
     case 'editor':
       return '/dashboard';
@@ -19,8 +12,7 @@ export const getRoleBasedRedirect = (role) => {
 };
 
 export const isAuthenticated = () => {
-  const user = localStorage.getItem('currentUser');
-  return user !== null;
+  return Boolean(getToken() && getCurrentUser());
 };
 
 export const getCurrentUser = () => {
@@ -29,9 +21,24 @@ export const getCurrentUser = () => {
 };
 
 export const setCurrentUser = (user) => {
-  localStorage.setItem('currentUser', JSON.stringify(user));
+  const normalizedUser = user?.type === 'viewer' ? { ...user, type: 'user' } : user;
+  localStorage.setItem('currentUser', JSON.stringify(normalizedUser));
+};
+
+export const getToken = () => localStorage.getItem('token');
+
+export const setAuthSession = ({ token, user }) => {
+  const normalizedUser = user?.type === 'viewer' ? { ...user, type: 'user' } : user;
+
+  localStorage.setItem('token', token);
+  localStorage.setItem('firstName', normalizedUser?.firstName || '');
+  localStorage.setItem('type', normalizedUser?.type || '');
+  setCurrentUser(normalizedUser);
 };
 
 export const logoutUser = () => {
   localStorage.removeItem('currentUser');
+  localStorage.removeItem('token');
+  localStorage.removeItem('firstName');
+  localStorage.removeItem('type');
 };

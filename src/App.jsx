@@ -8,10 +8,13 @@ import HomePage from './pages/HomePage';
 import RoleBasedDashboard from './components/RoleBasedDashboard';
 import UsersPage from './pages/DashboardPages/UsersPage';
 import ReportsPage from './pages/DashboardPages/ReportsPage';
+import DashArticlesPage from './pages/DashboardPages/DashArticlesPage';
+import ArticleSelectionsPage from './pages/DashboardPages/ArticleSelectionsPage';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import NotFoundPage from './pages/NotFoundPage';
 import SignInPage from './pages/AuthPages/SignInPage';
 import SignUpPage from './pages/AuthPages/SignUpPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const routes = [
   {
@@ -30,17 +33,27 @@ const routes = [
   },
   {
     path: '/dashboard',
-    element: <DashboardLayout><RoleBasedDashboard /></DashboardLayout>,
+    element: <ProtectedRoute><DashboardLayout><RoleBasedDashboard /></DashboardLayout></ProtectedRoute>,
+    errorElement: <NotFoundPage />
+  },
+  {
+    path: '/dashboard/articles',
+    element: <ProtectedRoute allowedRoles={['admin', 'editor']}><DashboardLayout><DashArticlesPage /></DashboardLayout></ProtectedRoute>,
     errorElement: <NotFoundPage />
   },
   {
     path: '/dashboard/users',
-    element: <DashboardLayout><UsersPage /></DashboardLayout>,
+    element: <ProtectedRoute roles={['admin']}><DashboardLayout><UsersPage /></DashboardLayout></ProtectedRoute>,
     errorElement: <NotFoundPage />
   },
   {
     path: '/dashboard/reports',
-    element: <DashboardLayout><ReportsPage /></DashboardLayout>,
+    element: <ProtectedRoute allowedRoles={['admin', 'editor', 'user']}><DashboardLayout><ReportsPage /></DashboardLayout></ProtectedRoute>,
+    errorElement: <NotFoundPage />
+  },
+  {
+    path: '/dashboard/article-selections',
+    element: <ProtectedRoute allowedRoles={['admin']}><DashboardLayout><ArticleSelectionsPage /></DashboardLayout></ProtectedRoute>,
     errorElement: <NotFoundPage />
   },
   {

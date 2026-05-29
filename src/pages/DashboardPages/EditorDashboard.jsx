@@ -15,7 +15,11 @@ import {
   ListItemIcon,
   Chip
 } from '@mui/material';
-import { Edit, Description, Publish, Drafts, Schedule } from '@mui/icons-material';
+import EditIcon from '@mui/icons-material/Edit';
+import DescriptionIcon from '@mui/icons-material/Description';
+import PublishIcon from '@mui/icons-material/Publish';
+import DraftsIcon from '@mui/icons-material/Drafts';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/auth';
 
@@ -65,7 +69,7 @@ export default function EditorDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Description sx={{ fontSize: 40, color: 'primary.main' }} />
+                <DescriptionIcon sx={{ fontSize: 40, color: 'primary.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.totalReports}
@@ -82,7 +86,7 @@ export default function EditorDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Publish sx={{ fontSize: 40, color: 'success.main' }} />
+                <PublishIcon sx={{ fontSize: 40, color: 'success.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.publishedReports}
@@ -99,7 +103,7 @@ export default function EditorDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Drafts sx={{ fontSize: 40, color: 'warning.main' }} />
+                <DraftsIcon sx={{ fontSize: 40, color: 'warning.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.draftReports}
@@ -116,7 +120,7 @@ export default function EditorDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Schedule sx={{ fontSize: 40, color: 'info.main' }} />
+                <ScheduleIcon sx={{ fontSize: 40, color: 'info.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.reviewReports}
@@ -133,7 +137,7 @@ export default function EditorDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Edit sx={{ fontSize: 40, color: 'secondary.main' }} />
+                <EditIcon sx={{ fontSize: 40, color: 'secondary.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.totalViews}
@@ -159,7 +163,7 @@ export default function EditorDashboard() {
               {myReports.map((report) => (
                 <ListItem key={report.id} divider>
                   <ListItemIcon>
-                    <Description />
+                    <DescriptionIcon />
                   </ListItemIcon>
                   <ListItemText
                     primary={report.title}

@@ -1,8 +1,30 @@
+import { useEffect, useState } from 'react';
 import Button from '../components/Button';
 import ArticleList from '../components/ArticleList';
-import articles from '../assets/styles/article-content.js';
+import { fetchArticles, mapArticleFromApi } from '../services/ArticleService';
 
 const ArticleListPage = () => {
+  const [articles, setArticles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const loadArticles = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        const { data } = await fetchArticles();
+        setArticles((data?.articles || []).map(mapArticleFromApi));
+      } catch (err) {
+        setError(err.response?.data?.message || 'Unable to load articles.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadArticles();
+  }, []);
+
   return (
     <div className="flex w-full flex-col gap-6">
       {/* Header Section */}
@@ -33,8 +55,23 @@ const ArticleListPage = () => {
           </h2>
         </div>
 
-        {/* This calls the component that maps through your articles */}
-        <ArticleList articles={articles} />
+        {loading && (
+          <p className="text-sm leading-7 text-zinc-600">Loading articles...</p>
+        )}
+
+        {error && (
+          <div className="rounded-xl border-2 border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {!loading && !error && articles.length === 0 && (
+          <p className="text-sm leading-7 text-zinc-600">No articles published yet.</p>
+        )}
+
+        {!loading && !error && articles.length > 0 && (
+          <ArticleList articles={articles} />
+        )}
       </section>
     </div>
   );

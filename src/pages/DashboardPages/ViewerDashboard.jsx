@@ -14,15 +14,18 @@ import {
   ListItemText,
   ListItemIcon
 } from '@mui/material';
-import { Visibility, Description, TrendingUp, AccessTime } from '@mui/icons-material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import DescriptionIcon from '@mui/icons-material/Description';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../utils/auth';
 
-export default function ViewerDashboard() {
+export default function UserDashboard() {
   const navigate = useNavigate();
   const currentUser = getCurrentUser();
 
-  // Sample data for viewer
+  // Sample data for user
   const recentReports = [
     { id: 1, title: 'Monthly Sales Report', date: '2024-01-15', status: 'Published' },
     { id: 2, title: 'User Activity Analysis', date: '2024-01-14', status: 'Published' },
@@ -41,7 +44,7 @@ export default function ViewerDashboard() {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" sx={{ fontWeight: 'bold', mb: 1 }}>
-          Viewer Dashboard
+          User Dashboard
         </Typography>
         <Typography variant="body1" sx={{ color: 'text.secondary' }}>
           Welcome back, {currentUser?.firstName}! View reports and analytics
@@ -54,7 +57,7 @@ export default function ViewerDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Description sx={{ fontSize: 40, color: 'primary.main' }} />
+                <DescriptionIcon sx={{ fontSize: 40, color: 'primary.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.totalReports}
@@ -71,7 +74,7 @@ export default function ViewerDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Visibility sx={{ fontSize: 40, color: 'success.main' }} />
+                <VisibilityIcon sx={{ fontSize: 40, color: 'success.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.publishedReports}
@@ -88,7 +91,7 @@ export default function ViewerDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Description sx={{ fontSize: 40, color: 'warning.main' }} />
+                <DescriptionIcon sx={{ fontSize: 40, color: 'warning.main' }} />
                 <Box>
                   <Typography variant="h4" component="div">
                     {stats.draftReports}
@@ -105,7 +108,7 @@ export default function ViewerDashboard() {
           <Card>
             <CardContent>
               <Stack direction="row" alignItems="center" spacing={2}>
-                <AccessTime sx={{ fontSize: 40, color: 'info.main' }} />
+                <AccessTimeIcon sx={{ fontSize: 40, color: 'info.main' }} />
                 <Box>
                   <Typography variant="body2" component="div">
                     {stats.lastLogin}
@@ -131,7 +134,7 @@ export default function ViewerDashboard() {
               {recentReports.map((report) => (
                 <ListItem key={report.id} divider>
                   <ListItemIcon>
-                    <Description />
+                    <DescriptionIcon />
                   </ListItemIcon>
                   <ListItemText
                     primary={report.title}

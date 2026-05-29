@@ -36,7 +36,7 @@ export default function AdminDashboard() {
   const roleDistribution = [
     { label: 'Admin', value: 1 },
     { label: 'Editor', value: 2 },
-    { label: 'Viewer', value: 3 }
+    { label: 'User', value: 3 }
   ];
 
   const genderData = [4, 2]; // Female, Male
